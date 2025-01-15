@@ -1,10 +1,16 @@
 import { Input } from 'antd';
 import { Controller } from 'react-hook-form';
 
-const PHInput = ({ type, name, label }) => {
+type TInputProps = {
+    type: string;
+    name: string;
+    label?: string
+}
+
+const PHInput = ({ type, name, label }: TInputProps) => {
 
     return (
-        <div style={{ marginBottom: '16px' }}> 
+        <div style={{ marginBottom: '16px' }}>
             {label && <label htmlFor={label}>{label}:</label>}
             <Controller
                 name={name} render={({ field }) => (
