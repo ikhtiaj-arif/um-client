@@ -1,17 +1,22 @@
 import { Table, TableColumnsType, TableProps } from 'antd';
-import React from 'react';
+import { useState } from 'react';
 import { useGetAllSemestersQuery } from '../../../redux/features/admin/academicManagement.api';
+import { TQueryParam } from '../../../types';
 import { TAcademicSemester } from '../../../types/academicManagement.type';
 
 
 
-export type TTableData = Pick<TAcademicSemester, "name" | "_id" | "endMonth" | "startMonth" | "year">
+export type TTableData = Pick<TAcademicSemester, "name" | "endMonth" | "startMonth" | "year">
 
 const AcademicSemester = () => {
-    const { data: semesterData } = useGetAllSemestersQuery(undefined)
+    const [params, setParams] = useState<TQueryParam[] | undefined>(undefined)
+    const { data: semesterData, isLoading, isFetching } = useGetAllSemestersQuery(params)
+
+    console.log(isLoading, isFetching);
 
     const tableData = semesterData?.data?.map(({ _id, name, startMonth, endMonth, year }) => ({
-        _id,
+        key: _id,
+
         name, startMonth, endMonth, year
     }))
 
@@ -20,29 +25,20 @@ const AcademicSemester = () => {
         {
             title: 'Name',
             dataIndex: 'name',
+            key: 'name',
             showSorterTooltip: { target: 'full-header' },
             filters: [
                 {
-                    text: 'Joe',
-                    value: 'Joe',
+                    text: 'Autumn',
+                    value: 'Autumn',
                 },
                 {
-                    text: 'Jim',
-                    value: 'Jim',
+                    text: 'Fall',
+                    value: 'Fall',
                 },
                 {
-                    text: 'Submenu',
-                    value: 'Submenu',
-                    children: [
-                        {
-                            text: 'Green',
-                            value: 'Green',
-                        },
-                        {
-                            text: 'Black',
-                            value: 'Black',
-                        },
-                    ],
+                    text: 'Summer',
+                    value: 'summer',
                 },
             ], // specify the condition of filtering result
             // here is that finding the name started with `value`
@@ -51,30 +47,59 @@ const AcademicSemester = () => {
         {
             title: 'Year',
             dataIndex: 'year',
+            key: 'year',
             defaultSortOrder: 'descend',
+            filters: [
+                {
+                    text: '2024',
+                    value: '2024',
+                },
+                {
+                    text: '2025',
+                    value: '2025',
+                },
+                {
+                    text: '2026',
+                    value: '2026',
+                },
+            ],
 
         },
         {
             title: 'Start Month',
             dataIndex: 'startMonth',
+            key: 'startMonth',
 
         },
         {
             title: 'End Month',
             dataIndex: 'endMonth',
+            key: 'endMonth',
 
         },
     ];
 
 
-    const onChange: TableProps<TTableData>['onChange'] = (pagination, filters, sorter, extra) => {
-        console.log('params', pagination, filters, sorter, extra);
+    const onChange: TableProps<TTableData>['onChange'] = (_pagination, filters, _sorter, extra) => {
+        if (extra.action === 'filter') {
+            const queryParams: TQueryParam[] = []
+
+            filters.name?.forEach(item => (queryParams.push({ name: "name", value: item })))
+            setParams(queryParams);
+
+            filters.year?.forEach(item => (queryParams.push({ name: "year", value: item })))
+            setParams(queryParams);
+        }
     };
 
 
+    if (isLoading) {
+        return <p>Loading...</p>
+    }
     return (
         <div>
             <Table<TTableData>
+                loading={isFetching}
                 columns={columns}
                 dataSource={tableData}
                 onChange={onChange}
